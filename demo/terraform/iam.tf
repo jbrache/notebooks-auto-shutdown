@@ -13,6 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 
+### Cloud Functions SA IAM Organization permissions
 resource "google_organization_iam_member" "binding" {
   for_each = toset(local.cf_sa_organization_roles)
   org_id   = var.org_id
@@ -23,7 +24,7 @@ resource "google_organization_iam_member" "binding" {
   ]
 }
 
-### Cloud Functions IAM
+### Cloud Functions SA IAM Project permissions
 resource "google_project_iam_member" "cf_create_project_permissions" {
   project    = var.project_id
   for_each   = toset(local.cf_sa_project_roles)
@@ -34,7 +35,8 @@ resource "google_project_iam_member" "cf_create_project_permissions" {
   ]
 }
 
-# Permissions on the service account used by the function and Eventarc trigger
+### Cloud Scheduler SA IAM Project permissions
+### Permissions on the service account used by the function and Eventarc trigger
 resource "google_project_iam_member" "scheduler_cf_invoking" {
   project    = var.project_id
   for_each   = toset(local.scheduler_sa_project_roles)

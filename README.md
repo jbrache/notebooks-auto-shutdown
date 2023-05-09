@@ -1,6 +1,6 @@
 # Notebooks Auto Shutdown
 
-This template demonstrates how to shutdown a Vertex AI [user-managed notebook](https://cloud.google.com/vertex-ai/docs/workbench/user-managed/introduction) (UmN) after a specified number of seconds. This is also extended to be able to operate at the organization level, scanning for all projects, inspecting notebook metadata values to make a decision on whether to shutdown a notebook instance. For examples, you can setup your notebooks to shutdown after 8 hours from starting up.
+This template demonstrates how to shutdown Vertex AI [user-managed notebooks](https://cloud.google.com/vertex-ai/docs/workbench/user-managed/introduction) (UmN) after a specified number of seconds. This is also extended to be able to operate at the organization level, scanning for all projects, inspecting notebook metadata values to make a decision on whether to shutdown a notebook instance. For examples, you can setup your notebooks to shutdown after 8 hours from starting up.
 
 **Important:** By default, the Cloud Function inspects a specific UmN metadata value for the timer threshold:
 * `auto-shutdown-seconds`
@@ -32,6 +32,8 @@ NOTE: Deployment via service account impersonation is not in scope of this demo.
 The existing project is required to be run as part of a Google Organization in Google Cloud. Be sure that the Google Cloud user or service account executing this module has the following roles:
 
 - At the Organization level: `roles/orgpolicy.policyAdmin`
+
+Note: The Organization Administrator (`roles/resourcemanager.organizationAdmin`) role may also be needed to assign permissions to the Cloud Function SA, alternatively you could limit the scope of the Cloud Function for certain projects.
 
 ## Installation in an existing project
 
