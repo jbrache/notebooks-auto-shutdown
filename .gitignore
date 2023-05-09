@@ -1,0 +1,79 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+node_modules/
+sa-key.json
+
+# next.js
+.next/
+out/
+
+# production
+dist/
+coverage/
+
+!/modules/**/build/
+
+# misc
+.DS_Store
+*.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# local env files
+.env*.local
+
+*.bak
+
+# vercel
+.vercel
+
+# Firestore Emulator logs
+*-debug.log
+
+# Intellij files
+.idea
+*.iml
+
+# User-specific stuff
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/**/usage.statistics.xml
+.idea/**/dictionaries
+.idea/**/shelf
+.idea/**/contentModel.xml
+
+
+# Terraform files
+terraform.tfvars
+**/.terraform*
+**/backend.tf
+*.tfstate
+*.tfstate.*
+*.lock.hcl
+*.out
+
+venv
+crash.log
+credentials.json
+.vscode/
+env/
+.envrc
+elk/
+test/**
+
+# Zip files for function code
+*.zip
+!agent_exports/exported_agent_FNOL_Auto_Claim.zip
+
+terraform.tfvars
+backend.tf
+
+staging.terraform.tfbackend
+terraform.tfvars.staging
+
+app.yaml
