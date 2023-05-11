@@ -12,14 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# import urllib
-# import google.auth.transport.requests
+import os
+import functions_framework
+from google import auth
+from google.auth.transport.requests import AuthorizedSession
 from google.cloud import resourcemanager_v3
 from google.cloud import notebooks_v1
-from google.cloud.location import locations_pb2
-import os
-from google.auth.transport.requests import AuthorizedSession
-from google import auth
+# from google.cloud.location import locations_pb2
 from datetime import datetime,timezone
 from dateutil.parser import isoparse
 
