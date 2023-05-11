@@ -43,6 +43,7 @@ def get_project_ids():
         project_ids.append(project.project_id)
     return project_ids
 
+# Gets supported locations for the notebooks service given a Project ID
 def get_location_ids(project_id):
     credentials, project = auth.default(scopes = ['https://www.googleapis.com/auth/cloud-platform'])
     authed_session = AuthorizedSession(credentials)
@@ -61,7 +62,9 @@ def get_location_ids(project_id):
         location_ids = []
     return location_ids
 
-# https://cloud.google.com/python/docs/reference/notebooks/latest
+# List instances for a Project ID and Location ID
+# https://github.com/googleapis/python-notebooks/blob/main/samples/generated_samples/notebooks_v1_generated_notebook_service_list_instances_sync.py
+# https://cloud.google.com/vertex-ai/docs/workbench/reference/rest/v1/projects.locations.instances/list
 def list_instances(project_id, location):
     client = notebooks_v1.NotebookServiceClient()
 
@@ -73,7 +76,9 @@ def list_instances(project_id, location):
     page_result = client.list_instances(request=request)
     return list(page_result)
 
+# Stops a Notebooks instance given a fully qualified name
 # https://github.com/googleapis/python-notebooks/blob/main/samples/generated_samples/notebooks_v1_generated_notebook_service_stop_instance_sync.py
+# https://cloud.google.com/vertex-ai/docs/workbench/reference/rest/v1/projects.locations.instances/stop
 def stop_instance(instance_name):
     client = notebooks_v1.NotebookServiceClient()
 
@@ -88,6 +93,8 @@ def stop_instance(instance_name):
     response = operation.result()
     return response
 
+# Stop the instances using the Python Client Library
+# https://cloud.google.com/python/docs/reference/notebooks/latest
 def stop_server_sdk(request):
     client = notebooks_v1.NotebookServiceClient()
     project_ids = get_project_ids()
@@ -103,7 +110,6 @@ def stop_server_sdk(request):
             for region in REGION_LIST:
                 if (region not in location_id) or (region == location_id):
                     skip = True
-            
             if skip:
                 continue
 
@@ -152,6 +158,8 @@ def stop_server_sdk(request):
 
     return return_response
 
+# Stop the instances using REST API Commands
+# https://cloud.google.com/vertex-ai/docs/workbench/reference/rest
 def stop_server_rest(request):
     credentials, project = auth.default(scopes = ['https://www.googleapis.com/auth/cloud-platform'])
     authed_session = AuthorizedSession(credentials)
@@ -178,7 +186,6 @@ def stop_server_rest(request):
                     skip = True
             if skip:
                 continue
-            print(location_id)
 
             # Get AI Platform notebook instances
             response = authed_session.get(f"https://notebooks.googleapis.com/v1/projects/{project_id}/locations/{location_id}/instances")
