@@ -14,8 +14,9 @@
 
 # import urllib
 # import google.auth.transport.requests
-import functions_framework
 from google.cloud import resourcemanager_v3
+from google.cloud import notebooks_v1
+from google.cloud.location import locations_pb2
 import os
 from google.auth.transport.requests import AuthorizedSession
 from google import auth
@@ -39,11 +40,119 @@ def get_project_ids():
     # Iterate
     project_ids = []
     for project in projects:
-        print(project.project_id)
         project_ids.append(project.project_id)
     return project_ids
 
-def stop_server(request):
+def get_location_ids(project_id):
+    credentials, project = auth.default(scopes = ['https://www.googleapis.com/auth/cloud-platform'])
+    authed_session = AuthorizedSession(credentials)
+
+    # Get zone resources available to the project
+    # https://cloud.google.com/ai-platform/notebooks/docs/reference/rest/v1/projects.locations/list   
+    response = authed_session.get(f"https://notebooks.googleapis.com/v1/projects/{project_id}/locations")
+
+    locations_json = response.json()
+    location_ids = []
+    try:
+        locations = locations_json["locations"]
+        for location in locations:
+            location_ids.append(location["locationId"])
+    except:
+        location_ids = []
+    return location_ids
+
+# https://cloud.google.com/python/docs/reference/notebooks/latest
+def list_instances(project_id, location):
+    client = notebooks_v1.NotebookServiceClient()
+
+    # Initialize request argument(s)
+    request = notebooks_v1.ListInstancesRequest(
+        parent=f"projects/{project_id}/locations/{location}",
+    )
+
+    page_result = client.list_instances(request=request)
+    return list(page_result)
+
+# https://github.com/googleapis/python-notebooks/blob/main/samples/generated_samples/notebooks_v1_generated_notebook_service_stop_instance_sync.py
+def stop_instance(instance_name):
+    client = notebooks_v1.NotebookServiceClient()
+
+    # Initialize request argument(s)
+    request = notebooks_v1.StopInstanceRequest(
+        name=instance_name,
+    )
+
+    # Make the request
+    operation = client.stop_instance(request=request)
+    print("Waiting for stop operation to complete...")
+    response = operation.result()
+    return response
+
+def stop_server_sdk(request):
+    client = notebooks_v1.NotebookServiceClient()
+    project_ids = get_project_ids()
+    return_response = {}
+
+    for project_id in project_ids:
+        now_utc = datetime.now(timezone.utc)
+        location_ids = get_location_ids(project_id)
+
+        for location_id in location_ids:
+            # This example only runs inspects instances in a region, exclude this to run for all zones
+            skip = False
+            for region in REGION_LIST:
+                if (region not in location_id) or (region == location_id):
+                    skip = True
+            
+            if skip:
+                continue
+
+            notebook_instances = []
+            try:
+                notebook_instances = list_instances(project_id, location_id)
+            except:
+                continue
+            
+            for notebook_instance in notebook_instances:
+                instance_name = notebook_instance.name
+                metadata = notebook_instance.metadata
+                print("-------", "Instance name:", instance_name, "-------")
+                print(metadata)
+                auto_shutdown_seconds = 0
+
+                try:
+                    auto_shutdown_seconds = int(metadata[SHUTDOWN_SECONDS_METADATA_KEY])
+                    print(SHUTDOWN_SECONDS_METADATA_KEY, "metadata set to:", auto_shutdown_seconds)
+                except:
+                    print(SHUTDOWN_SECONDS_METADATA_KEY, "metadata not set, skip...")
+                    continue
+                
+                if notebook_instance.state != notebook_instance.State.ACTIVE:
+                    print("Instance isn't ACTIVE, skip...")
+                    continue
+                
+                update_time = notebook_instance.update_time
+
+                print("timeNow:", now_utc.isoformat())
+                print("updatedTime:", update_time.isoformat())
+
+                t1 = isoparse(update_time.isoformat())
+                t2 = isoparse(now_utc.isoformat())
+                # get difference
+                delta = t2 - t1
+                delta_seconds = delta.total_seconds()
+                print("Difference in seconds between updatedTime and timeNow:", delta_seconds)
+
+                if (delta_seconds >= auto_shutdown_seconds) and delta_seconds >= 0:
+                    print("Stopping server...")
+                    response = stop_instance(instance_name)
+                    return_response[instance_name] = response
+                else:
+                    print("Shutdown threshold not hit, skip...")     
+
+    return return_response
+
+def stop_server_rest(request):
     credentials, project = auth.default(scopes = ['https://www.googleapis.com/auth/cloud-platform'])
     authed_session = AuthorizedSession(credentials)
     project_ids = get_project_ids()
@@ -53,7 +162,6 @@ def stop_server(request):
         # Get zone resources available to the project
         # https://cloud.google.com/ai-platform/notebooks/docs/reference/rest/v1/projects.locations/list   
         response = authed_session.get(f"https://notebooks.googleapis.com/v1/projects/{project_id}/locations")
-        # print(response.json())
         locations_json = response.json()
         try:
             locations = locations_json["locations"]
@@ -63,7 +171,7 @@ def stop_server(request):
 
         for location in locations:
             location_id = location["locationId"]
-            # This example only inspects instances in a region, exclude this to run for all zones
+            # this example only inspects instances in a region, exclude this to run for all zones
             skip = False
             for region in REGION_LIST:
                 if (region not in location_id) or (region == location_id):
