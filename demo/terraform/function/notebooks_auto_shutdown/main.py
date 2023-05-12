@@ -41,34 +41,45 @@ def get_project_ids():
         project_ids.append(project.project_id)
     return project_ids
 
-def stop_server(request):
+# Gets supported locations for the notebooks service given a Project ID
+def get_location_ids(project_id):
+    credentials, project = auth.default(scopes = ['https://www.googleapis.com/auth/cloud-platform'])
+    authed_session = AuthorizedSession(credentials)
+
+    # Get zone resources available to the project
+    # https://cloud.google.com/ai-platform/notebooks/docs/reference/rest/v1/projects.locations/list   
+    response = authed_session.get(f"https://notebooks.googleapis.com/v1/projects/{project_id}/locations")
+
+    locations_json = response.json()
+    location_ids = []
+    try:
+        locations = locations_json["locations"]
+        for location in locations:
+            location_ids.append(location["locationId"])
+    except:
+        location_ids = []
+    return location_ids
+
+# Stop the instances using REST API Commands
+# https://cloud.google.com/vertex-ai/docs/workbench/reference/rest
+def stop_server_rest(request):
     credentials, project = auth.default(scopes = ['https://www.googleapis.com/auth/cloud-platform'])
     authed_session = AuthorizedSession(credentials)
     project_ids = get_project_ids()
     return_response = {}
 
     for project_id in project_ids:
-        # Get zone resources available to the project
-        # https://cloud.google.com/ai-platform/notebooks/docs/reference/rest/v1/projects.locations/list   
-        response = authed_session.get(f"https://notebooks.googleapis.com/v1/projects/{project_id}/locations")
-        # print(response.json())
-        locations_json = response.json()
-        try:
-            locations = locations_json["locations"]
-        except:
-            continue
         now_utc = datetime.now(timezone.utc)
+        location_ids = get_location_ids(project_id)
 
-        for location in locations:
-            location_id = location["locationId"]
-            # This example only inspects instances in a region, exclude this to run for all zones
+        for location_id in location_ids:
+            # this example only inspects instances in a region, exclude this to run for all zones
             skip = False
             for region in REGION_LIST:
                 if (region not in location_id) or (region == location_id):
                     skip = True
             if skip:
                 continue
-            print(location_id)
 
             # Get AI Platform notebook instances
             response = authed_session.get(f"https://notebooks.googleapis.com/v1/projects/{project_id}/locations/{location_id}/instances")
@@ -83,6 +94,7 @@ def stop_server(request):
             for instance in instances:
                 instance_name = instance["name"]
                 print("-------", "Instance name:", instance_name, "-------")
+                print(instance["metadata"])
                 auto_shutdown_seconds = 0
                 
                 try:
@@ -98,7 +110,6 @@ def stop_server(request):
                 
                 update_time = instance["updateTime"]
                 update_time_iso = update_time.replace("Z", "+00:00")
-
                 print("timeNow:", now_utc.isoformat())
                 print("updatedTime:", update_time_iso)
 
@@ -115,6 +126,6 @@ def stop_server(request):
                     print(response.json())
                     return_response[instance_name] = response.json()
                 else:
-                    print("Shutdown threshold not hit, skip...")                
+                    print("Shutdown threshold not hit, skip...")                    
             
     return return_response

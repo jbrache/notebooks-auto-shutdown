@@ -137,7 +137,6 @@ def stop_server_sdk(request):
                     continue
                 
                 update_time = notebook_instance.update_time
-
                 print("timeNow:", now_utc.isoformat())
                 print("updatedTime:", update_time.isoformat())
 
@@ -166,18 +165,10 @@ def stop_server_rest(request):
     return_response = {}
 
     for project_id in project_ids:
-        # Get zone resources available to the project
-        # https://cloud.google.com/ai-platform/notebooks/docs/reference/rest/v1/projects.locations/list   
-        response = authed_session.get(f"https://notebooks.googleapis.com/v1/projects/{project_id}/locations")
-        locations_json = response.json()
-        try:
-            locations = locations_json["locations"]
-        except:
-            continue
         now_utc = datetime.now(timezone.utc)
+        location_ids = get_location_ids(project_id)
 
-        for location in locations:
-            location_id = location["locationId"]
+        for location_id in location_ids:
             # this example only inspects instances in a region, exclude this to run for all zones
             skip = False
             for region in REGION_LIST:
@@ -199,6 +190,7 @@ def stop_server_rest(request):
             for instance in instances:
                 instance_name = instance["name"]
                 print("-------", "Instance name:", instance_name, "-------")
+                print(instance["metadata"])
                 auto_shutdown_seconds = 0
                 
                 try:
@@ -214,7 +206,6 @@ def stop_server_rest(request):
                 
                 update_time = instance["updateTime"]
                 update_time_iso = update_time.replace("Z", "+00:00")
-
                 print("timeNow:", now_utc.isoformat())
                 print("updatedTime:", update_time_iso)
 
