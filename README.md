@@ -21,6 +21,12 @@ Use Terraform in Google Cloud to provision these resources
 Create a GCP project to host your Notebooks Auto Shutdown Project
 * `gcloud projects create <project-id>`
 
+## Quick Start
+
+To create a module in an existing GCP environment, please click on the “Open In Cloud Shell” button.  This will clone the entire repository to Cloud Shell and automatically select the `main`-branch.
+
+[![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://ssh.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https://github.com/jbrache/notebooks-auto-shutdown&cloudshell_git_branch=main)
+
 ## IAM Permissions Prerequisites
 When deploying in an existing project (By a user or service account), ensure that the identity executing this module has the following IAM permissions on the project:
 
