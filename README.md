@@ -8,13 +8,20 @@ This template demonstrates how to shutdown Vertex AI [user-managed notebooks](ht
 Where the value for `auto-shutdown-seconds` is the number of seconds since the instance has been Active, i.e. 28800 seconds / 8 Hours. You will need to set this key/value on user-managed notebooks for the Cloud Function to shutdown instances.
 
 ## GCP Products/Services
+
 Use Terraform in Google Cloud to provision these resources
 
 * Cloud Functions (2nd gen) for scanning notebooks, shutting them down across an Organization
 * Cloud Scheduler
 * Buckets storing the Cloud Function artifacts
 
+## Reference Architecture Diagram
+
+Below is an Architechture Diagram of the base representation of what will be created as a part of [Demo Terraform](demo/terraform/main.tf)
+![Notebooks Auto Shutdown](images/notebooks_auto_shutdown.png?raw=true "Notebooks Auto Shutdown")
+
 ## Prerequisites
+
 * [terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli?in=terraform/gcp-get-started) version 1.0 or higher.
 * [gcloud](https://cloud.google.com/sdk/docs/install) SDK version 360.0.0 or higher.
 
@@ -22,6 +29,7 @@ Create a GCP project to host your Notebooks Auto Shutdown Project
 * `gcloud projects create <project-id>`
 
 ## IAM Permissions Prerequisites
+
 When deploying in an existing project (By a user or service account), ensure that the identity executing this module has the following IAM permissions on the project:
 
 - `roles/owner`
@@ -29,6 +37,7 @@ When deploying in an existing project (By a user or service account), ensure tha
 NOTE: Deployment via service account impersonation is not in scope of this demo.
 
 ### Organization IAM Permissions Prerequisites
+
 The existing project is required to be run as part of a Google Organization in Google Cloud. Be sure that the Google Cloud user or service account executing this module has the following roles:
 
 - At the Organization level: `roles/orgpolicy.policyAdmin`
