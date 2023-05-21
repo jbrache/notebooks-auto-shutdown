@@ -18,7 +18,12 @@ Use Terraform in Google Cloud to provision these resources
 ## Reference Architecture Diagram
 
 Below is an Architechture Diagram of the base representation of what will be created as a part of [Demo Terraform](demo/terraform/main.tf)
-![Notebooks Auto Shutdown](images/notebooks_auto_shutdown.png?raw=true "Notebooks Auto Shutdown")
+
+![Notebooks Auto Shutdown](images/notebooks_auto_shutdown_architecture.png?raw=true "Notebooks Auto Shutdown")
+
+1. Demo deployment into existing project via CLI
+2. Cloud Function running on a schedule inspects projects for user-managed notebooks beyond a time threshold
+3. Shutdown notebook instances depending on their status
 
 ## Prerequisites
 
